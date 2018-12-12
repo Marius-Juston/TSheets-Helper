@@ -9,7 +9,6 @@ from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from oauth2client import file, client
-from oauth2client.service_account import ServiceAccountCredentials
 from oauth2client.tools import run_flow
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -265,49 +264,49 @@ def aggregating_hours(uid_to_name):
     return data
 
 
-def get_sheet(sheet_name):
-    scope = ['https://spreadsheets.google.com/feeds',
-             'https://www.googleapis.com/auth/drive']
+# def get_sheet(sheet_name):
+#     scope = ['https://spreadsheets.google.com/feeds',
+#              'https://www.googleapis.com/auth/drive']
+#
+#     # TODO either remove this method because I am using OAuth or move this comment
+#     import gspread
+#
+#     credentials = ServiceAccountCredentials.from_json_keyfile_name("client_id.json", scope)
+#     client = gspread.authorize(credentials)
+#
+#     return client.open(sheet_name).sheet1
 
-    # TODO either remove this method because I am using OAuth or move this comment
-    import gspread
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_name("client_id.json", scope)
-    client = gspread.authorize(credentials)
-
-    return client.open(sheet_name).sheet1
-
-
-def get_range(sheet, information: pd.DataFrame):
-    """
-
-    :param sheet:
-    :type sheet: gspread.Worksheet
-    :param information:
-    :return:
-    """
-    data = information.values.tolist()
-    column_header = list(information)
-    data.insert(0, column_header)
-
-    rows = len(data)
-    cols = len(column_header)
-
-    start = "A1"
-    end = "{}{}".format(chr(ord('A') + cols - 1), rows)
-
-    print(start)
-    print(end)
-
-    cell_range = sheet.range("{}:{}".format(start, end))
-
-    i = 0
-    for r in range(rows):
-        for c in range(cols):
-            cell_range[i].value = data[r][c]
-            i += 1
-
-    return cell_range
+# def get_range(sheet, information: pd.DataFrame):
+#     """
+#
+#     :param sheet:
+#     :type sheet: gspread.Worksheet
+#     :param information:
+#     :return:
+#     """
+#     data = information.values.tolist()
+#     column_header = list(information)
+#     data.insert(0, column_header)
+#
+#     rows = len(data)
+#     cols = len(column_header)
+#
+#     start = "A1"
+#     end = "{}{}".format(chr(ord('A') + cols - 1), rows)
+#
+#     print(start)
+#     print(end)
+#
+#     cell_range = sheet.range("{}:{}".format(start, end))
+#
+#     i = 0
+#     for r in range(rows):
+#         for c in range(cols):
+#             cell_range[i].value = data[r][c]
+#             i += 1
+#
+#     return cell_range
 
 
 def get_credentials():
