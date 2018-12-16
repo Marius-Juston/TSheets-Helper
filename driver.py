@@ -19,8 +19,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
-from googlesheets.formater import formatting, clean_up_formatting
-from googlesheets.simple_sending import get_string_range
+from helper import add_text_condition, \
+    add_filter, add_custom_condition, red, orange, green, add_date_format, add_freeze_col, add_freeze_row, add_bold_row, \
+    clean_up_formatting
 
 login_page = "https://waltonroboticsteam.tsheets.com/page/login"
 username = os.environ['TSHEETS_USERNAME']  # See run configuration for environment variables
@@ -83,7 +84,8 @@ dynamic_date_formula = '=ARRAYFORMULA(IFERROR(MIN(FILTER({0}, {0}-NOW()>0)), FIL
 
 # =ARRAYFORMULA(IFERROR(MIN(FILTER(H2:L2, H2:L2-NOW()>0)), FILTER(H2:L2,H2:L2-NOW()=MIN(H2:L2-NOW()))))
 
-hours_finding_formula = '=INDEX({3}:{4},MATCH("{0}",H:H),MATCH({2},TRANSPOSE({1}:{1}),0))'
+hours_finding_formula = '=INDEX({4}:{5},MATCH("{0}",{6}:{6}),MATCH({3},TRANSPOSE({1}:{2}),0))'
+DELAY = 3  # seconds
 
 
 # =INDEX($A$1:$L$4,MATCH("Outreach",H:H),MATCH($N$2,TRANSPOSE($2:$2),0))
@@ -108,7 +110,7 @@ def find_id_and_click(driver: WebDriver, page_id: str):
     return
 
 
-def complete_login_page(driver: WebDriver):
+def complete_login_page(driver: WebDriver, delay=DELAY):
     input_element = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'username')))
     input_element.send_keys(username)
 
@@ -117,14 +119,14 @@ def complete_login_page(driver: WebDriver):
     input_element.submit()
 
 
-def open_payroll_filters(driver: WebDriver):
+def open_payroll_filters(driver: WebDriver, delay=DELAY):
     input_element = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'reports_shortcut')))
     input_element.click()
 
     find_id_and_click(driver, "reporting_payroll_shortcut")
 
 
-def complete_filter_form(driver: WebDriver):
+def complete_filter_form(driver: WebDriver, delay=DELAY):
     input_element = Select(WebDriverWait(driver, delay).until(
         EC.presence_of_element_located((By.ID, 'reporting_payroll_date_filter_options'))))
 
@@ -313,10 +315,10 @@ def get_credentials():
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/drive']
 
-    store = file.Storage('storage.json')
+    store = file.Storage('assets/storage.json')
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('client_id.json', SCOPES)
+        flow = client.flow_from_clientsecrets('assets/client_id.json', SCOPES)
         creds = run_flow(flow, store)
 
     return creds
@@ -373,23 +375,36 @@ def add_hours_constrains(hours_verification: dict, data: pd.DataFrame):
 
 
 def add_dynamic_hours(hours, start_date_column, end_date_column, date_row=2):
-    start_cell = constant_cell(2, start_date_column)
-    end_cell = constant_cell(2, end_date_column)
+    start_cell = constant_cell(date_row, start_date_column)
+    end_cell = constant_cell(date_row, end_date_column)
+
+    filled_dynamic_date_formula = dynamic_date_formula.format("{}:{}".format(start_cell, end_cell))
+
+    start_cell = constant_cell(1, start_date_column)
 
     check_date_row, check_date_column = 2, end_date_column + 1
     dynamic_date_cell = constant_cell(check_date_row, check_date_column)
 
-    origin_cell = constant_cell(1, 0)
     end_search_cell = constant_cell(4, end_date_column)
-    dates_row = "${}".format(date_row)
+    title_column = "${}".format(chr(ord('A') + start_date_column - 1))
 
-    # =INDEX($A$1:$L$4,MATCH("Outreach",H:H),MATCH($N$2,TRANSPOSE($2:$2),0))
-    # =INDEX({3}:{4},MATCH({0},H:H),MATCH({2},TRANSPOSE({1}:{1}),0))
+    transpose_start = constant_cell(2, start_date_column)
+    transpose_end = constant_cell(date_row, end_date_column)
+
+    # =INDEX($H$1:$M$4,MATCH("Outreach",H:H),MATCH($N$2,TRANSPOSE($I2:$M2),0))
+    # =INDEX({4}:{5},MATCH("{0}",{6}:{6}),MATCH({3},TRANSPOSE({1}:{2}),0))
 
     return pd.concat([hours, pd.Series([
-        dynamic_date_formula.format("{}:{}".format(start_cell, end_cell)),
-        hours_finding_formula.format("Outreach", dates_row, dynamic_date_cell, origin_cell, end_search_cell),
-        hours_finding_formula.format("Participation", dates_row, dynamic_date_cell, origin_cell, end_search_cell),
+        filled_dynamic_date_formula,
+        hours_finding_formula.format("Outreach", transpose_start, transpose_end, dynamic_date_cell, start_cell,
+                                     end_search_cell, title_column),
+        hours_finding_formula.format("Participation", transpose_start, transpose_end, dynamic_date_cell, start_cell,
+                                     end_search_cell, title_column),
+
+        # hours_finding_formula.format("Outreach", transpose_start, dynamic_date_cell, origin_cell, end_search_cell,
+        #                              title_column),
+        # hours_finding_formula.format("Participation", dates_row, dynamic_date_cell, origin_cell, end_search_cell,
+        #                              title_column),
     ], name="Checked Date")], axis=1), check_date_row - 1, check_date_column
 
 
@@ -445,12 +460,8 @@ def sort_hours(data: pd.DataFrame, sorting_order: list):
 def format_sheet(service, spreadsheet_id, outreach_cell, participation_cell, check_column_index, outreach_column,
                  participation_column, check_date_row, check_date_column, calculated_offset=3):
     reqs = formatting(outreach_cell, participation_cell, check_column_index, outreach_column, participation_column,
-                      check_date_row, check_date_column)
-    res = service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=reqs).execute()
-
-    reqs = formatting(outreach_cell, participation_cell, check_column_index + calculated_offset,
-                      outreach_column + calculated_offset, participation_column + calculated_offset,
-                      check_date_row, check_date_column, check_column_index + calculated_offset)
+                      check_date_row, check_date_column, filter_stop_column=check_column_index + calculated_offset,
+                      offset=calculated_offset)
     res = service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=reqs).execute()
 
 
@@ -502,13 +513,10 @@ def open_spreadsheet(spreadsheet_id):
     webbrowser.get(chrome_path).open(url)
 
 
-if __name__ == '__main__':
-    start_total = datetime.now()
-
-    driver = webdriver.Chrome()
+def get_tsheets_table_html_source():
+    driver = webdriver.Chrome(executable_path='assets/chromedriver')
     driver.maximize_window()
     driver.get(login_page)
-    delay = 3  # seconds
 
     try:
         complete_login_page(driver)
@@ -526,63 +534,148 @@ if __name__ == '__main__':
         open_all_info(driver, uid_to_name)
 
         print((datetime.now() - start_time).total_seconds())
+
         source = driver.page_source
-
         driver.close()
-
-        retrieve_all_table_data(source, uid_to_name)
-
-        remove_hours_by_date_constraints(uid_to_name, excluded_hours)
-
-        hours = aggregating_hours(uid_to_name)
-        hours = sort_hours(hours, ["Outreach", "Participation"])
-
-        print(hours)
-
-        # sheet = get_sheet("Test")
-        # cell_range = get_range(sheet, hours)
-        # sheet.update_cells(cell_range)
-
-        credentials = get_credentials()
-        service = get_service(credentials)
-
-        closest_date = get_closest_hour_index(hours_check)
-
-        print(hours_check)
-
-        # TODO make 6 more dynamic the problem is that len(hours.columns) changes after this
-        check_column = 6 + closest_date
-        print(check_column)
-        print(closest_date)
-
-        outreach_cell, participation_cell = get_outreach_participation_cell(check_column, outreach_row,
-                                                                            participation_row)
-
-        hours = add_hours_check(hours, outreach_cell, participation_cell)
-        check_column_index = len(hours.columns) - 1
-
-        hours = add_maxed_hours(hours, outreach_cell)
-        hours = add_hours_check(hours, outreach_cell, participation_cell, outreach_column=4, participation_column=5,
-                                column_name="Check Calculated")
-
-        hours = add_hours_constrains(hours_check, hours)
-        hours, check_date_row, check_date_column = add_dynamic_hours(hours, len(hours.columns) - len(hours_check),
-                                                                     len(hours.columns) - 1)
-
-        print(hours)
-        values = to_list(hours)
-        print(values)
-
-        response = update_value(service, spreadsheet_id, values)
-
-        # TODO use the formulas above to make it even more dynamic for dates
-        clean_up_sheet(service, spreadsheet_id)
-        print(check_date_row, check_date_column)
-
-        format_sheet(service, spreadsheet_id, outreach_cell, participation_cell, check_column_index, 1, 2,
-                     check_date_row, check_date_column)
+        return source, uid_to_name
     except TimeoutException:
         print("Loading took too much time!")
+
+
+import json
+
+
+def save(source, uid_to_name, FILE_NAME):
+    with open(FILE_NAME, 'w') as outfile:
+        json.dump({"html": source, "map": uid_to_name}, outfile)
+
+
+def load(FILE_NAME):
+    with open(FILE_NAME, 'r') as outfile:
+        data = json.load(outfile)
+
+        return data['html'], data['map']
+
+
+def aggregate_and_manipulate_data(source, uid_to_name):
+    retrieve_all_table_data(source, uid_to_name)
+
+    remove_hours_by_date_constraints(uid_to_name, excluded_hours)
+
+    hours = aggregating_hours(uid_to_name)
+    hours = sort_hours(hours, ["Outreach", "Participation"])
+
+    print(hours)
+
+    # closest_date = get_closest_hour_index(hours_check)
+
+    # print(hours_check)
+
+    # TODO make 6 more dynamic the problem is that len(hours.columns) changes after this
+    check_column = 1 + 3 + 3 + len(hours_check)
+    print(check_column)
+    # print(closest_date)
+
+    outreach_cell, participation_cell = get_outreach_participation_cell(check_column, outreach_row,
+                                                                        participation_row)
+
+    hours = add_hours_check(hours, outreach_cell, participation_cell)
+    check_column_index = len(hours.columns) - 1
+
+    hours = add_maxed_hours(hours, outreach_cell)
+    hours = add_hours_check(hours, outreach_cell, participation_cell, outreach_column=4, participation_column=5,
+                            column_name="Check Calculated")
+
+    hours = add_hours_constrains(hours_check, hours)
+    hours, check_date_row, check_date_column = add_dynamic_hours(hours, len(hours.columns) - len(hours_check),
+                                                                 len(hours.columns) - 1)
+
+    print(hours)
+    values = to_list(hours)
+
+    return values, outreach_cell, participation_cell, check_column_index, check_date_row, check_date_column
+
+
+def send_to_google_sheets(values, outreach_cell, participation_cell, check_column_index, check_date_row,
+                          check_date_column):
+    credentials = get_credentials()
+    service = get_service(credentials)
+
+    response = update_value(service, spreadsheet_id, values)
+
+    # TODO use the formulas above to make it even more dynamic for dates
+    clean_up_sheet(service, spreadsheet_id)
+    print(check_date_row, check_date_column)
+
+    format_sheet(service, spreadsheet_id, outreach_cell, participation_cell, check_column_index, 1, 2,
+                 check_date_row, check_date_column)
+
+
+def formatting(outreach_cell, participation_cell, check_column, outreach_column, participation_column, check_date_row,
+               check_date_column,
+               filter_stop_column=0, offset=3):
+    equation = '=AND(${1}1<{0},NOT(${1}1=""))'
+
+    outreach_column_name = chr(ord('A') + outreach_column)
+    participation_column_name = chr(ord('A') + participation_column)
+
+    check_column_c = check_column + offset
+    outreach_column_c, participation_column_c = outreach_column + offset, participation_column + offset
+    outreach_column_name_c = chr(ord('A') + outreach_column_c)
+    participation_column_name_c = chr(ord('A') + participation_column_c)
+
+    print(outreach_cell, participation_cell, outreach_column_name_c, check_column, outreach_column,
+          participation_column)
+
+    reqs = {'requests': [
+        add_freeze_row(),
+        add_freeze_col(),
+        add_bold_row(),
+
+        add_text_condition("TEXT_CONTAINS", "GOOD", green, check_column),
+        add_text_condition("TEXT_CONTAINS", "PARTICIPATION", orange, check_column),
+        add_text_condition("TEXT_CONTAINS", "OUTREACH", orange, check_column),
+        add_text_condition("TEXT_CONTAINS", "BOTH", red, check_column),
+
+        add_filter(filter_stop_column),
+
+        add_custom_condition(equation.format(outreach_cell, outreach_column_name), red, outreach_column),
+        add_custom_condition(equation.format(participation_cell, participation_column_name), orange,
+                             participation_column),
+
+        add_text_condition("TEXT_CONTAINS", "GOOD", green, check_column_c),
+        add_text_condition("TEXT_CONTAINS", "PARTICIPATION", orange, check_column_c),
+        add_text_condition("TEXT_CONTAINS", "OUTREACH", orange, check_column_c),
+        add_text_condition("TEXT_CONTAINS", "BOTH", red, check_column_c),
+
+        add_custom_condition(equation.format(outreach_cell, outreach_column_name_c), red, outreach_column_c),
+        add_custom_condition(equation.format(participation_cell, participation_column_name_c), orange,
+                             participation_column_c),
+
+        add_date_format(check_date_row, check_date_column)
+    ]}
+
+    return reqs
+
+
+if __name__ == '__main__':
+    start_total = datetime.now()
+
+    use_saved = False
+
+    FILE_NAME = "assets/info.json"
+
+    if use_saved:
+        source, uid_to_name = load(FILE_NAME)
+    else:
+        source, uid_to_name = get_tsheets_table_html_source()
+        save(source, uid_to_name, FILE_NAME)
+
+    values, outreach_cell, participation_cell, check_column_index, check_date_row, \
+    check_date_column = aggregate_and_manipulate_data(source, uid_to_name)
+
+    send_to_google_sheets(values, outreach_cell, participation_cell, check_column_index, check_date_row,
+                          check_date_column)
 
     print("Program took: {}s to finish".format((datetime.now() - start_total).total_seconds()))
 
