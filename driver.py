@@ -26,6 +26,7 @@ from helper import add_text_condition, \
 login_page = "https://waltonroboticsteam.tsheets.com/page/login"
 username = os.environ['TSHEETS_USERNAME']  # See run configuration for environment variables
 password = os.environ['TSHEETS_PASSWORD']  # See run configuration for environment variables
+tsheets_token= os.environ['TSHEETS_TOKEN']  # See run configuration for environment variables
 # TODO https://slackapi.github.io/python-slackclient/basic_usage.html#sending-a-message make it so that it sends
 #  a message when finishing
 
