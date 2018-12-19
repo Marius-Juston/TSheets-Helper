@@ -7,7 +7,7 @@ class TSheetsCache:
     timesheets_table = 'timesheets'
     time_stamp_table = 'info_timestamp'
 
-    update_rates = {
+    __update_rates = {
         users_table: 365,
         jobcodes_table: 365,
         timesheets_table: 1.0 / 24,
@@ -19,7 +19,7 @@ class TSheetsCache:
         self.cursor = self.conn.cursor()
 
         if update_rates is not None:
-            self.update_rates = update_rates
+            self.__update_rates = update_rates
 
         self.create_timestamp_table()
         self.create_username_table()
@@ -118,7 +118,7 @@ class TSheetsCache:
         # if isinstance(table_names, str):
         #     table_names = (table_names,)
 
-        time = self.update_rates[table_name]
+        time = self.__update_rates[table_name]
 
         a = self.cursor.execute(
             '''SELECT time_stamp
