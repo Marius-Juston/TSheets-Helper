@@ -21,6 +21,11 @@ class TSheetsCache:
         if update_rates is not None:
             self.update_rates = update_rates
 
+        self.create_timestamp_table()
+        self.create_username_table()
+        self.create_jobcodes_table()
+        self.create_timesheets_table()
+
     def table_exists(self, table):
         try:
             self.cursor.execute('''SELECT 1 FROM {} LIMIT 1;'''.format(table))
