@@ -74,7 +74,7 @@ def get_timesheets(group_ids, start_date, end_date=None):
     timesheet_filters = {
         "group_ids": ",".join(group_ids),
         "start_date": start_date,
-        "supplemental_data":"no"
+        "supplemental_data": "no"
     }
 
     if end_date is not None:
@@ -99,7 +99,9 @@ def get_timesheets(group_ids, start_date, end_date=None):
 
     return data
 
+
 import os
+
 if __name__ == '__main__':
     token = os.environ['TSHEETS_TOKEN']
     auth_options = {"Authorization": "Bearer {}".format(token)}
