@@ -7,11 +7,19 @@ class TSheetsCache:
     timesheets_table = 'timesheets'
     time_stamp_table = 'info_timestamp'
 
+    update_rates = {
+        users_table: 365,
+        jobcodes_table: 365,
+        timesheets_table: 1.0 / 24,
+    }
 
     def __init__(self, database_file="tsheets_info.db", update_rates: dict = None) -> None:
         super().__init__()
         self.conn = sqlite3.connect(database_file)
         self.cursor = self.conn.cursor()
+
+        if update_rates is not None:
+            self.update_rates = update_rates
 
     def table_exists(self, table):
         try:
@@ -68,6 +76,29 @@ class TSheetsCache:
     def insert_jobcodes(self, jobcodes):
         self.cursor.executemany("INSERT INTO users VALUES (?, ?, ? )", jobcodes)
         self.conn.commit()
+
+    def needs_update(self, table_name: str):
+        # if isinstance(table_names, str):
+        #     table_names = (table_names,)
+
+        time = self.update_rates[table_name]
+
+        a = self.cursor.execute(
+            '''SELECT time_stamp
+                from info_timestamp
+                where (
+                          table_name = ?
+                          AND (JULIANDAY('now') - JULIANDAY(time_stamp)) <= ?
+                        )
+                ORDER BY time_stamp DESC LIMIT 1''',
+            [table_name, time])
+
+        a = a.fetchone()
+        print(a)
+
+        return a is None
+
+
 if __name__ == '__main__':
     with TSheetsCache() as database:
         # database.add_time_stamp("users")
