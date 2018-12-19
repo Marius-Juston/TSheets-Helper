@@ -29,6 +29,10 @@ class TSheetsCache:
             self.cursor.execute("CREATE TABLE jobcodes (id INTEGER, parent_id INTEGER,name TEXT)")
             self.conn.commit()
 
+    def create_timestamp_table(self):
+        if not self.table_exists(self.time_stamp_table):
+            self.cursor.execute("CREATE TABLE info_timestamp (table_name text, time_stamp TIMESTAMP)")
+            self.conn.commit()
     def close(self):
         self.conn.close()
 
