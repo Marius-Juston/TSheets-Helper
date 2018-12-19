@@ -40,6 +40,14 @@ class TSheetsCache:
         if not self.table_exists(self.time_stamp_table):
             self.cursor.execute("CREATE TABLE info_timestamp (table_name text, time_stamp TIMESTAMP)")
             self.conn.commit()
+
+    def add_time_stamp(self, tables):
+        if isinstance(tables, str):
+            tables = ((tables,),)
+
+        self.cursor.executemany("INSERT INTO info_timestamp VALUES (?, CURRENT_TIMESTAMP)", tables)
+        self.conn.commit()
+
     def close(self):
         self.conn.close()
 
