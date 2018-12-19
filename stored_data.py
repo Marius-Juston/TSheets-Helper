@@ -49,6 +49,17 @@ class TSheetsCache:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    def insert_users(self, users):
+        self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
+        self.conn.commit()
+
+    def insert_timesheets(self, timesheets):
+        self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?, ?)", timesheets)
+        self.conn.commit()
+
+    def insert_jobcodes(self, jobcodes):
+        self.cursor.executemany("INSERT INTO users VALUES (?, ?, ? )", jobcodes)
+        self.conn.commit()
 if __name__ == '__main__':
     with TSheetsCache() as database:
         # database.add_time_stamp("users")
