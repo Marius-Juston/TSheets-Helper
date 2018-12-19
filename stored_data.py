@@ -70,15 +70,28 @@ class TSheetsCache:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def insert_users(self, users):
+    def delete_information(self, table):
+        self.cursor.execute("DELETE FROM {}".format(table))
+        self.conn.commit()
+
+    def insert_users(self, users, purge_table=True):
+        if purge_table:
+            self.delete_information(self.users_table)
+
         self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
         self.conn.commit()
 
-    def insert_timesheets(self, timesheets):
-        self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?, ?)", timesheets)
+    def insert_timesheets(self, timesheets, purge_table=True):
+        if purge_table:
+            self.delete_information(self.timesheets_table)
+
+        self.cursor.executemany("INSERT INTO timesheets VALUES (?, ?, ?, ?, ?)", timesheets)
         self.conn.commit()
 
-    def insert_jobcodes(self, jobcodes):
+    def insert_jobcodes(self, jobcodes, purge_table=True):
+        if purge_table:
+            self.delete_information(self.jobcodes_table)
+
         self.cursor.executemany("INSERT INTO users VALUES (?, ?, ? )", jobcodes)
         self.conn.commit()
 
@@ -106,9 +119,11 @@ class TSheetsCache:
 
 if __name__ == '__main__':
     with TSheetsCache() as database:
+        # database.insert_timesheets([[1, 3, "2018-01-06", 4, 5]])
+
         # database.add_time_stamp("users")
         # database.add_time_stamp("users")
-        database.needs_update("users")
+        # database.needs_update("users")
 
         print(database.needs_update("users"))
     # c.create_username_table()
