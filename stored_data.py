@@ -35,18 +35,37 @@ class TSheetsCache:
 
     def create_username_table(self):
         if not self.table_exists(self.users_table):
-            self.cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name text, email text) ")
+            self.cursor.execute("CREATE TABLE users (user_id INTEGER PRIMARY KEY, name text, email text) ")
             self.conn.commit()
 
     def create_timesheets_table(self):
         if not self.table_exists(self.timesheets_table):
             self.cursor.execute(
-                "CREATE TABLE timesheets (id INTEGER PRIMARY KEY, date DATE, duration INTEGER, jobcode_id INTEGER)")
+                '''CREATE TABLE timesheets 
+                    (
+                        timesheet_id INTEGER PRIMARY KEY, 
+                        user_id integer not null,
+                        date DATE, 
+                        duration INTEGER, 
+                        jobcode_id INTEGER,
+                        FOREIGN KEY (user_id)
+                            REFERENCES users(user_id) ,
+                        FOREIGN KEY (jobcode_id) 
+                            REFERENCES jobcodes(jobcode_id) 
+                    )'''
+            )
             self.conn.commit()
 
     def create_jobcodes_table(self):
         if not self.table_exists(self.jobcodes_table):
-            self.cursor.execute("CREATE TABLE jobcodes (id INTEGER PRIMARY KEY, parent_id INTEGER,name TEXT)")
+            self.cursor.execute('''CREATE TABLE jobcodes 
+                                    (
+                                    jobcode_id INTEGER PRIMARY KEY, 
+                                    parent_id INTEGER,
+                                    name TEXT,
+                                    FOREIGN KEY (parent_id) 
+                                        REFERENCES jobcodes(jobcode_id) 
+                                    )''')
             self.conn.commit()
 
     def create_timestamp_table(self):
