@@ -1,6 +1,9 @@
 from datetime import datetime
 
+import pandas as pd
 import requests
+
+from stored_data import TSheetsCache
 
 
 def get(url, filters=None, header=None):
@@ -40,10 +43,11 @@ def get_users(groups_ids=None):
     return users.json()["results"]["users"]
 
 
-import pandas as pd
-
-
 def users_to_dataframe(users):
+    return pd.DataFrame(user_to_list(users), columns=["id", "name", "email"])
+
+
+def user_to_list(users):
     data = []
 
     for key, value in users.items():
@@ -51,21 +55,25 @@ def users_to_dataframe(users):
         email_address = value['email']
         data.append([key, name, email_address])
 
-    return pd.DataFrame(data, columns=["id", "name", "email"])
+    return data
 
 
 def timesheets_to_dateframe(timesheets: dict):
+    return pd.DataFrame(timesheets_to_list(timesheets), columns=["id", "date", "duration", 'jobcode_id'])
+
+
+def timesheets_to_list(timesheets):
     data = []
 
-    for value in timesheets.values():
+    for key, value in timesheets.items():
         user_id = value["user_id"]
         date = value["date"]
         duration = value["duration"]
         job_code = value["jobcode_id"]
 
-        data.append([user_id, date, duration, job_code])
+        data.append([key, user_id, date, duration, job_code])
 
-    return pd.DataFrame(data, columns=["id", "date", "duration", 'jobcode_id'])
+    return data
 
 
 def get_timesheets(group_ids, start_date, end_date=None):
@@ -105,21 +113,32 @@ import os
 if __name__ == '__main__':
     token = os.environ['TSHEETS_TOKEN']
     auth_options = {"Authorization": "Bearer {}".format(token)}
-
-    ids = get_group_ids()
-    # print(ids)
-    people = get_users(ids)
-    # pprint(people)
-    people = users_to_dataframe(people)
-    # print(people)
-
     start_date = "2018-01-06"
 
-    start_time = datetime.now()
-    timesheets = get_timesheets(ids, start_date)
-    # pprint(timesheets)
-    print((datetime.now() - start_time).total_seconds())
-    print(len(timesheets))
+    with TSheetsCache() as database:
+        ids = None
 
-    timesheets = timesheets_to_dateframe(timesheets)
-    print(timesheets)
+        if database.needs_update(database.users_table):
+            ids = get_group_ids()
+
+            people = get_users(ids)
+            people = user_to_list(people)
+            database.insert_users(people)
+            database.add_time_stamp(database.users_table)
+
+        if database.needs_update(database.jobcodes_table):
+            if ids is None:
+                ids = get_group_ids()
+
+        if database.needs_update(database.timesheets_table):
+            if ids is None:
+                ids = get_group_ids()
+
+            start_time = datetime.now()
+            timesheets = get_timesheets(ids, start_date)
+            print((datetime.now() - start_time).total_seconds())
+            print(len(timesheets))
+
+            timesheets = timesheets_to_list(timesheets)
+            database.insert_timesheets(timesheets)
+            database.add_time_stamp(database.timesheets_table)
