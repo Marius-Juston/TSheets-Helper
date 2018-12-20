@@ -56,8 +56,6 @@ class GoogleSheets:
         if range_ is None:
             range_ = self.get_string_range(values)
 
-        print(range_)
-
         request = self.service.spreadsheets().values().update(spreadsheetId=self.spreadsheet_id, range=range_,
                                                               valueInputOption=value_input_option,
                                                               body=value_range_body)
@@ -146,8 +144,6 @@ class GoogleSheets:
     def get_string_range(data_list: list, start=None):
         rows = len(data_list)
         cols = len(data_list[0])
-        print(rows)
-        print(cols)
 
         if start is None:
             start = cell(1, 0)
