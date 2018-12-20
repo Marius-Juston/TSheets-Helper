@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import pandas as pd
@@ -108,7 +109,44 @@ def get_timesheets(group_ids, start_date, end_date=None):
     return data
 
 
-import os
+def get_jobcodes():
+    url = 'https://rest.tsheets.com/api/v1/jobcodes'
+
+    jobcode_filters = {
+        "supplemental_data": "no"
+    }
+
+    data = {}
+
+    page_number = 1
+    while True:
+        jobcode_filters["page"] = page_number
+
+        users = get(url, filters=jobcode_filters, header=auth_options)
+        response = users.json()["results"]["jobcodes"]
+
+        if not response:
+            break
+        else:
+            print(page_number)
+            page_number += 1
+            data.update(response)
+
+    return data
+
+
+def jobcodes_to_list(jobcodes):
+    data = []
+
+    for value in jobcodes.values():
+        id = value["id"]
+        parent_id = value["parent_id"]
+        name = value["name"]
+
+        data.append([id, parent_id, name])
+
+    return data
+
 
 if __name__ == '__main__':
     token = os.environ['TSHEETS_TOKEN']
@@ -123,12 +161,14 @@ if __name__ == '__main__':
 
             people = get_users(ids)
             people = user_to_list(people)
-            database.insert_users(people)
-            database.add_time_stamp(database.users_table)
+            success = database.insert_users(people)
+            database.add_time_stamp(database.users_table, success)
 
         if database.needs_update(database.jobcodes_table):
-            if ids is None:
-                ids = get_group_ids()
+            jobcodes = get_jobcodes()
+            jobcodes = jobcodes_to_list(jobcodes)
+            success = database.insert_jobcodes(jobcodes)
+            database.add_time_stamp(database.jobcodes_table, success)
 
         if database.needs_update(database.timesheets_table):
             if ids is None:
@@ -140,5 +180,5 @@ if __name__ == '__main__':
             print(len(timesheets))
 
             timesheets = timesheets_to_list(timesheets)
-            database.insert_timesheets(timesheets)
-            database.add_time_stamp(database.timesheets_table)
+            success = database.insert_timesheets(timesheets)
+            database.add_time_stamp(database.timesheets_table, success)
