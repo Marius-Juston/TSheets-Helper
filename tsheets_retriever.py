@@ -187,7 +187,7 @@ class TSheetsAPI:
         for i in range(0, len(messages), step):
             json_body = {'data': messages[i: i + step]}
 
-            tsheets_api.post(self.notifications_url, json=json_body)
+            self.post(self.notifications_url, json=json_body)
 
 
 if __name__ == '__main__':
