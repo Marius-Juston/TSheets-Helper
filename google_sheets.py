@@ -70,7 +70,7 @@ class GoogleSheets:
 
         self.format_sheet(formatter.outreach_cell, formatter.participation_cell, formatter.check_column_index,
                           formatter.outreach_column, formatter.participation_column,
-                          formatter.check_date_row, formatter.check_date_column)
+                          formatter.check_date_row, formatter.check_date_column, formatter.offset)
 
     def format_sheet(self, outreach_cell, participation_cell, check_column_index,
                      outreach_column,
