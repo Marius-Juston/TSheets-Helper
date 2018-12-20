@@ -150,17 +150,65 @@ class TSheetsCache:
 
         return a is None
 
+    def fetch_participation_hours(self):
+        hours = self.cursor.execute(
+            '''
+            SELECT users.name                                         as student_name
+                   , SUM(T.duration / 3600.0)                         as hours
+            FROM users
+                JOIN timesheets T
+                    ON T.user_id = users.user_id
+                JOIN jobcodes j 
+                    ON T.jobcode_id = j.jobcode_id
+                INNER JOIN jobcodes j2 
+                    ON j.parent_id = j2.jobcode_id
+            WHERE j2.name == 'Participation' OR j2.name == 'Training'
+            GROUP BY student_name;
+            ''')
+
+        return hours.fetchall()
+
+    def fetch_outreach_hours(self):
+        hours = self.cursor.execute(
+            '''
+            SELECT users.name                       as student_name
+                   , SUM(T.duration / 3600.0)       as hours
+            FROM users
+                JOIN timesheets T
+                    ON T.user_id = users.user_id
+                JOIN jobcodes j 
+                    ON T.jobcode_id = j.jobcode_id
+                INNER JOIN jobcodes j2 
+                    ON j.parent_id = j2.jobcode_id
+            WHERE j2.name == 'O&S'
+            GROUP BY student_name;
+            ''')
+
+        return hours.fetchall()
+
+    def fetch_outreach_participation_hours(self):
+        particiaption = pd.DataFrame(self.fetch_participation_hours(), columns=["Name", "Participation"])
+        outreach = pd.DataFrame(self.fetch_outreach_hours(), columns=["Name", "Outreach"])
+
+        merged = pd.merge(outreach, particiaption, on="Name")
+        return merged
+
 
 if __name__ == '__main__':
     with TSheetsCache() as database:
-        a = database.insert_timesheets([[1, 1, "2018-01-06", 4, 5]])
-        print(a)
-        database.add_time_stamp(database.timesheets_table, a)
+        import pandas as pd
+
+        database.fetch_outreach_participation_hours()
+
+        # print(a)
+        # a = database.insert_timesheets([[1, 1, "2018-06-01", 4, 5]])
+        # print(a)
+        # database.add_time_stamp(database.timesheets_table, a)
 
         # database.add_time_stamp("users")
         # database.add_time_stamp("users")
         # database.needs_update("users")
 
-        print(database.needs_update(database.timesheets_table))
+        # print(database.needs_update(database.timesheets_table))
         # c.create_username_table()
         # c.create_username_table()
