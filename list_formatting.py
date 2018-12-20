@@ -168,3 +168,61 @@ class Runner:
                                               start_cell,
                                               end_search_cell, title_column),
         ], name="Checked Date")], axis=1)
+
+    def compose_and_send_notifications(self, google_sheets, methods=None):
+        checked_column = "{0}:{0}".format(chr(ord('A') + self.check_date_column))
+        check_particpation_column = "{0}:{0}".format(chr(ord('A') + self.participation_column + self.offset))
+        check_outreach_column = "{0}:{0}".format(chr(ord('A') + self.outreach_column + self.offset))
+        name_column = "A:A"
+
+        ranges = [checked_column, check_outreach_column, check_particpation_column, name_column]
+
+        info = google_sheets.retrieve_sheet_data(ranges)['valueRanges']
+
+        check_values = info[0]['values']
+        required_outreach = check_values[self.outreach_row - 1][0]
+        required_participation = check_values[self.participation_row - 1][0]
+
+        start_row = 1
+
+        outreach_hours = info[1]['values'][start_row:]
+        particpation_hours = info[2]['values'][start_row:]
+        names = info[3]['values'][start_row:]
+
+        users = {}
+
+        with TSheetsCache() as database:
+            # names = [x[0] for x in names]
+
+            for outreach, particpation, name in zip(outreach_hours, particpation_hours, names):
+                outreach = outreach[0]
+                particpation = particpation[0]
+                print(outreach)
+                print(particpation)
+                print(required_outreach)
+                print(required_participation)
+
+                message = "The next hours check is the {} and the required number of hours is {} outreach " \
+                          "hours and {} participation hours.\n".format(check_values[1][0], required_outreach,
+                                                                       required_participation)
+
+                if particpation < required_participation and outreach < required_outreach:
+                    message += "You still need {:.2f} outreach hours and {:.2f} participation hours.".format(
+                        required_outreach - outreach, required_participation - particpation)
+
+                elif particpation < required_participation:
+                    message += "You are good in outreach hours; however, you still need {:.2f} participation hours.".format(
+                        required_participation - particpation)
+                elif outreach < required_outreach:
+                    message += "You are good in participation hours; however, you still need {:.2f} outreach hours.".format(
+                        required_outreach - particpation
+                    )
+                else:
+                    message += "Good job you have the required outreach and participation hours!"
+
+                user_id = database.name_to_id(name)
+                users[user_id] = message
+                users['name'] = name
+
+        print(users)
+        self.tsheets_api.send_notifications(users, methods)
