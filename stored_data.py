@@ -13,8 +13,11 @@ class TSheetsCache:
         timesheets_table: 1.0 / 24,
     }
 
-    def __init__(self, database_file="tsheets_info.db", update_rates: dict = None) -> None:
+    def __init__(self, database_file="tsheets_info.db", update_rates: dict = None, excluded_date_ranges=None) -> None:
         super().__init__()
+        self.excluded_date_ranges = self.format_excluded_date_ranges(excluded_date_ranges)
+
+        print(self.excluded_date_ranges)
         self.conn = sqlite3.connect(database_file)
         self.cursor = self.conn.cursor()
 
@@ -162,28 +165,27 @@ class TSheetsCache:
                     ON T.jobcode_id = j.jobcode_id
                 INNER JOIN jobcodes j2 
                     ON j.parent_id = j2.jobcode_id
-            WHERE j2.name == 'Participation' OR j2.name == 'Training'
+            WHERE j2.name == 'Participation' OR j2.name == 'Training'{}
             GROUP BY student_name;
-            ''')
+            '''.format(self.excluded_date_ranges))
 
         return hours.fetchall()
 
     def fetch_outreach_hours(self):
         hours = self.cursor.execute(
             '''
-            SELECT users.name                       as student_name
-                   , SUM(T.duration / 3600.0)       as hours
-            FROM users
-                JOIN timesheets T
-                    ON T.user_id = users.user_id
-                JOIN jobcodes j 
-                    ON T.jobcode_id = j.jobcode_id
-                INNER JOIN jobcodes j2 
-                    ON j.parent_id = j2.jobcode_id
-            WHERE j2.name == 'O&S'
-            GROUP BY student_name;
-            ''')
-
+                SELECT users.name                       as student_name
+                       , SUM(T.duration / 3600.0)       as hours
+                FROM users
+                    JOIN timesheets T
+                        ON T.user_id = users.user_id
+                    JOIN jobcodes j 
+                        ON T.jobcode_id = j.jobcode_id
+                    INNER JOIN jobcodes j2 
+                        ON j.parent_id = j2.jobcode_id
+                WHERE j2.name == 'O&S'{}
+                GROUP BY student_name;
+                '''.format(self.excluded_date_ranges))
         return hours.fetchall()
 
     def fetch_outreach_participation_hours(self):
@@ -193,12 +195,37 @@ class TSheetsCache:
         merged = pd.merge(outreach, particiaption, on="Name")
         return merged
 
+    def format_excluded_date_ranges(self, excluded_date_ranges):
+        if excluded_date_ranges is None:
+            return ''
+
+        date_condition = []
+
+        for event in excluded_date_ranges:
+            start_date = excluded_date_ranges[event]['start']
+            end_date = excluded_date_ranges[event]['end']
+            date_condition.extend([start_date, end_date])
+
+        return (" AND T.date NOT BETWEEN '{}' AND '{}'" * int(len(date_condition) / 2)).format(*date_condition)
+
 
 if __name__ == '__main__':
-    with TSheetsCache() as database:
+    excluded_hours = {
+        "Garden City": {
+            "start": "2018-07-15",
+            "end": "2018-07-20"
+        },
+
+        "Dobbins Air Force Camp": {
+            "start": "2018-07-08",
+            "end": "2018-07-12"
+        }
+    }
+
+    with TSheetsCache(excluded_date_ranges=excluded_hours) as database:
         import pandas as pd
 
-        database.fetch_outreach_participation_hours()
+        print(database.fetch_outreach_participation_hours())
 
         # print(a)
         # a = database.insert_timesheets([[1, 1, "2018-06-01", 4, 5]])
