@@ -151,7 +151,7 @@ def jobcodes_to_list(jobcodes):
 if __name__ == '__main__':
     token = os.environ['TSHEETS_TOKEN']
     auth_options = {"Authorization": "Bearer {}".format(token)}
-    start_date = "2018-01-06"
+    start_date = "2018-06-01"
 
     with TSheetsCache() as database:
         ids = None
