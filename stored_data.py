@@ -10,9 +10,9 @@ class TSheetsCache:
     time_stamp_table = 'info_timestamp'
 
     __update_rates = {
-        users_table: 365,
-        jobcodes_table: 365,
-        timesheets_table: 1.0 / 24,
+        users_table: 100,
+        jobcodes_table: 100,
+        timesheets_table: 12.0 / 24,
     }
 
     def __init__(self, database_file="tsheets_info.db", update_rates: dict = None, excluded_date_ranges=None) -> None:
