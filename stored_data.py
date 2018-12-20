@@ -35,7 +35,7 @@ class TSheetsCache:
 
     def create_username_table(self):
         if not self.table_exists(self.users_table):
-            self.cursor.execute("CREATE TABLE users (user_id INTEGER PRIMARY KEY, name text, email text) ")
+            self.cursor.execute("CREATE TABLE users (user_id INTEGER NOT NULL PRIMARY KEY, name text, email text) ")
             self.conn.commit()
 
     def create_timesheets_table(self):
@@ -43,8 +43,8 @@ class TSheetsCache:
             self.cursor.execute(
                 '''CREATE TABLE timesheets 
                     (
-                        timesheet_id INTEGER PRIMARY KEY, 
-                        user_id integer not null,
+                        timesheet_id INTEGER NOT NULL PRIMARY KEY, 
+                        user_id INTEGER not null,
                         date DATE, 
                         duration INTEGER, 
                         jobcode_id INTEGER,
@@ -60,8 +60,8 @@ class TSheetsCache:
         if not self.table_exists(self.jobcodes_table):
             self.cursor.execute('''CREATE TABLE jobcodes 
                                     (
-                                    jobcode_id INTEGER PRIMARY KEY, 
-                                    parent_id INTEGER,
+                                    jobcode_id INTEGER NOT NULL PRIMARY KEY, 
+                                    parent_id INTEGER NOT NULL ,
                                     name TEXT,
                                     FOREIGN KEY (parent_id) 
                                         REFERENCES jobcodes(jobcode_id) 
@@ -70,14 +70,14 @@ class TSheetsCache:
 
     def create_timestamp_table(self):
         if not self.table_exists(self.time_stamp_table):
-            self.cursor.execute("CREATE TABLE info_timestamp (table_name text, time_stamp TIMESTAMP)")
+            self.cursor.execute("CREATE TABLE info_timestamp (table_name text, time_stamp TIMESTAMP,successful BOOL )")
             self.conn.commit()
 
-    def add_time_stamp(self, tables):
-        if isinstance(tables, str):
-            tables = ((tables,),)
+    def add_time_stamp(self, tables, successful):
+        # if isinstance(tables, str):
+        #     tables = ((tables,),)
 
-        self.cursor.executemany("INSERT INTO info_timestamp VALUES (?, CURRENT_TIMESTAMP)", tables)
+        self.cursor.executemany("INSERT INTO info_timestamp VALUES (?, CURRENT_TIMESTAMP, ?)", [[tables, successful]])
         self.conn.commit()
 
     def close(self):
@@ -94,25 +94,40 @@ class TSheetsCache:
         self.conn.commit()
 
     def insert_users(self, users, purge_table=True):
-        if purge_table:
-            self.delete_information(self.users_table)
+        try:
+            if purge_table:
+                self.delete_information(self.users_table)
 
-        self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
-        self.conn.commit()
+            self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            print(e)
+            return False
 
     def insert_timesheets(self, timesheets, purge_table=True):
-        if purge_table:
-            self.delete_information(self.timesheets_table)
+        try:
+            if purge_table:
+                self.delete_information(self.timesheets_table)
 
-        self.cursor.executemany("INSERT INTO timesheets VALUES (?, ?, ?, ?, ?)", timesheets)
-        self.conn.commit()
+            self.cursor.executemany("INSERT INTO timesheets VALUES (?, ?, ?, ?, ?)", timesheets)
+            self.conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(e)
+            return False
 
     def insert_jobcodes(self, jobcodes, purge_table=True):
-        if purge_table:
-            self.delete_information(self.jobcodes_table)
+        try:
 
-        self.cursor.executemany("INSERT INTO users VALUES (?, ?, ? )", jobcodes)
-        self.conn.commit()
+            if purge_table:
+                self.delete_information(self.jobcodes_table)
+
+            self.cursor.executemany("INSERT INTO users VALUES (?, ?, ? )", jobcodes)
+            self.conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(e)
+            return False
 
     def needs_update(self, table_name: str):
         # if isinstance(table_names, str):
@@ -124,26 +139,28 @@ class TSheetsCache:
             '''SELECT time_stamp
                 from info_timestamp
                 where (
-                          table_name = ?
+                          successful
+                          AND table_name = ?
                           AND (JULIANDAY('now') - JULIANDAY(time_stamp)) <= ?
                         )
                 ORDER BY time_stamp DESC LIMIT 1''',
             [table_name, time])
 
         a = a.fetchone()
-        print(a)
 
         return a is None
 
 
 if __name__ == '__main__':
     with TSheetsCache() as database:
-        # database.insert_timesheets([[1, 3, "2018-01-06", 4, 5]])
+        a = database.insert_timesheets([[1, 1, "2018-01-06", 4, 5]])
+        print(a)
+        database.add_time_stamp(database.timesheets_table, a)
 
         # database.add_time_stamp("users")
         # database.add_time_stamp("users")
         # database.needs_update("users")
 
-        print(database.needs_update("users"))
-    # c.create_username_table()
-    # c.create_username_table()
+        print(database.needs_update(database.timesheets_table))
+        # c.create_username_table()
+        # c.create_username_table()
