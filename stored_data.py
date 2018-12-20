@@ -1,5 +1,7 @@
 import sqlite3
 
+import pandas as pd
+
 
 class TSheetsCache:
     users_table = 'users'
@@ -223,8 +225,6 @@ if __name__ == '__main__':
     }
 
     with TSheetsCache(excluded_date_ranges=excluded_hours) as database:
-        import pandas as pd
-
         print(database.fetch_outreach_participation_hours())
 
         # print(a)
