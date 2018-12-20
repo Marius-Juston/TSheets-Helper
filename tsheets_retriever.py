@@ -11,6 +11,13 @@ def get(url, filters=None, header=None):
     return response
 
 
+def post(url, data=None, json=None, header=None):
+    response = requests.api.post(url, data=data, json=json, headers=header)
+    response.raise_for_status()
+
+    return response
+
+
 class TSheetsAPI:
 
     def __init__(self, tsheets_token, start_date, end_date=None, group_names=("Students",)) -> None:
@@ -29,6 +36,9 @@ class TSheetsAPI:
 
     def get(self, url, filters=None):
         return get(url, filters, header=self.auth_options)
+
+    def post(self, url, data=None, json=None):
+        return post(url, data=data, json=json, header=self.auth_options)
 
     def get_group_ids(self):
         group_filter = {
