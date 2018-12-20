@@ -100,6 +100,7 @@ class TSheetsCache:
 
             self.cursor.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
             self.conn.commit()
+            return True
         except sqlite3.Error as e:
             print(e)
             return False
@@ -118,11 +119,10 @@ class TSheetsCache:
 
     def insert_jobcodes(self, jobcodes, purge_table=True):
         try:
-
             if purge_table:
                 self.delete_information(self.jobcodes_table)
 
-            self.cursor.executemany("INSERT INTO users VALUES (?, ?, ? )", jobcodes)
+            self.cursor.executemany("INSERT INTO jobcodes VALUES (?, ?, ? )", jobcodes)
             self.conn.commit()
             return True
         except sqlite3.Error as e:
