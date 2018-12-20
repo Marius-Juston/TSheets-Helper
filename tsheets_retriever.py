@@ -31,6 +31,7 @@ class TSheetsAPI:
         self.users_url = "https://rest.tsheets.com/api/v1/users"
         self.timesheets_url = 'https://rest.tsheets.com/api/v1/timesheets'
         self.jobcodes_url = 'https://rest.tsheets.com/api/v1/jobcodes'
+        self.notifications_url = 'https://rest.tsheets.com/api/v1/notifications'
 
         self.group_ids = None
 
@@ -164,6 +165,29 @@ class TSheetsAPI:
             data.append([id, parent_id, name])
 
         return data
+
+    def send_notifications(self, users: dict, methods=None):
+        if methods is None:
+            methods = ['push', 'dashboard', 'email']
+        elif isinstance(methods, str):
+            methods = (methods,)
+
+        messages = []
+
+        for user in users:
+            for method in methods:
+                messages.append(
+                    {
+                        "user_id": user,
+                        "method": method,
+                        "message": users[user]
+                    })
+
+        step = 50
+        for i in range(0, len(messages), step):
+            json_body = {'data': messages[i: i + step]}
+
+            tsheets_api.post(self.notifications_url, json=json_body)
 
 
 if __name__ == '__main__':
