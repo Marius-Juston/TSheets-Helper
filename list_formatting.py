@@ -7,7 +7,7 @@ from stored_data import TSheetsCache
 from tsheets_retriever import TSheetsAPI
 
 
-class Formatter:
+class Runner:
     dynamic_date_formula = '=ARRAYFORMULA(IFERROR(MIN(FILTER({0}, {0}-NOW()>0)), FILTER({0},{0}-NOW()=MIN({0}-NOW()))))'
     hours_finding_formula = '=INDEX({4}:{5},MATCH("{0}",{6}:{6}),MATCH({3},TRANSPOSE({1}:{2}),0))'
     outreach_equation = '=MIN({},{})'
