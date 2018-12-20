@@ -15,8 +15,9 @@ class Runner:
     if_statement = '=IF(AND({2}<{0},{3}<{1}),"BOTH",IF({2}<{0},"OUTREACH",IF({3}<{1},"PARTICIPATION","GOOD")))'
 
     def __init__(self, tsheets_token, info_json, participation_row=4, participation_column=2,
-                 outreach_row=3, outreach_column=1, date_row=2) -> None:
+                 outreach_row=3, outreach_column=1, date_row=2, offset=3) -> None:
         super().__init__()
+        self.offset = offset
         self.date_row = date_row
         self.participation_column = participation_column
         self.outreach_column = outreach_column
