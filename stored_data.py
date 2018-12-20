@@ -78,6 +78,20 @@ class TSheetsCache:
             self.cursor.execute("CREATE TABLE info_timestamp (table_name text, time_stamp TIMESTAMP,successful BOOL )")
             self.conn.commit()
 
+    def names_to_id(self, names):
+        data = {}
+
+        for name in names:
+            data[name[0]] = {'user_id': self.name_to_id(name)}
+
+        return data
+
+    def name_to_id(self, name):
+        result = self.cursor.execute("SELECT users.user_id from users where name==? LIMIT 1", name)
+        result = result.fetchone()[0]
+
+        return result
+
     def add_time_stamp(self, tables, successful):
         # if isinstance(tables, str):
         #     tables = ((tables,),)
