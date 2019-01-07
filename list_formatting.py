@@ -47,6 +47,7 @@ class Runner:
         return self.values
 
     def collect_hours(self):
+        # TODO make it so that it updates instead of having to retrieve all the data
         with TSheetsCache(excluded_date_ranges=self.info['excluded_hours']) as database:
             if database.needs_update(database.users_table):
                 people = self.tsheets_api.user_to_list()
