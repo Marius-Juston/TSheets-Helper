@@ -212,11 +212,11 @@ class Runner:
                         required_outreach - outreach, required_participation - particpation)
 
                 elif particpation < required_participation:
-                    message += "You are good in outreach hours; however, you still need {:.2f} participation hours.".format(
-                        required_participation - particpation)
+                    message += "You are good in outreach hours; however, you still need {:.2f} participation hours." \
+                        .format(required_participation - particpation)
                 elif outreach < required_outreach:
-                    message += "You are good in participation hours; however, you still need {:.2f} outreach hours.".format(
-                        required_outreach - outreach)
+                    message += "You are good in participation hours; however, you still need {:.2f} outreach hours." \
+                        .format(required_outreach - outreach)
                 else:
                     message += "Good job you have the required outreach and participation hours!"
 
