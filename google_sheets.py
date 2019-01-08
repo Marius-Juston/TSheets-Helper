@@ -152,10 +152,12 @@ class GoogleSheets:
 
         return "{}:{}".format(start, end)
 
-    def retrieve_sheet_data(self, ranges):
+    def retrieve_sheet_data(self, ranges, value_render_option="UNFORMATTED_VALUE",
+                            date_time_render_option="FORMATTED_STRING"):
 
         request = self.service.spreadsheets().values().batchGet(spreadsheetId=self.spreadsheet_id, ranges=ranges,
-                                                                valueRenderOption="UNFORMATTED_VALUE")
+                                                                valueRenderOption=value_render_option,
+                                                                dateTimeRenderOption=date_time_render_option)
         return request.execute()
 
     def run_batch_update(self, reqs):
