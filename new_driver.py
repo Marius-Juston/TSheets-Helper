@@ -16,5 +16,7 @@ if __name__ == '__main__':
     google_sheets.send_to_google_sheets(formatter)
     google_sheets.open_spreadsheet()
 
-    if os.environ['SEND_NOTIFICATIONS']:
+    print(os.environ['SEND_NOTIFICATIONS'])
+    if os.environ['SEND_NOTIFICATIONS'] == "1":
+        print("Sent notifications")
         formatter.compose_and_send_notifications(google_sheets)
