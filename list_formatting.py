@@ -96,7 +96,8 @@ class Runner:
         self.check_column_index = len(self.hours.columns) - 1
 
         self.add_maxed_hours()
-        self.add_hours_check(column_name="Check Calculated")
+
+        self.add_hours_check(column_name="Check Calculated", offset=self.offset)
 
         self.add_hours_constrains()
         start_date_column = len(self.hours.columns) - len(self.info['hours_check'])
@@ -121,11 +122,15 @@ class Runner:
 
         self.hours = self.hours.assign(Participation_Calculated=pd.Series(equation))
 
-    def add_hours_check(self, column_name="Check") -> (pd.DataFrame, str, str):
+    def add_hours_check(self, column_name="Check", offset=None) -> (
+            pd.DataFrame, str, str):
+        if offset is None:
+            offset = 0
 
         equation = [
-            self.if_statement.format(self.outreach_cell, self.participation_cell, cell(i, self.outreach_column),
-                                     cell(i, self.participation_column))
+            self.if_statement.format(self.outreach_cell, self.participation_cell,
+                                     cell(i, self.outreach_column + offset),
+                                     cell(i, self.participation_column + offset))
             for i in range(2, len(self.hours) + 2)
         ]
 
