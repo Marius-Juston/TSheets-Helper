@@ -10,7 +10,8 @@ if __name__ == '__main__':
     formatter = Runner(token, "info.json")
     info = formatter.run()
 
-    spreadsheet_id = '1eSk-VW24hnpfvbqGCInvkSLFMC5ml7UcrKq1DmObAmY'
+    # spreadsheet_id = '1eSk-VW24hnpfvbqGCInvkSLFMC5ml7UcrKq1DmObAmY'
+    spreadsheet_id = '1ImtDrstD8OzobtIknXnsyYDxBsbggJhZRrS9oIiYJpI'
 
     google_sheets = GoogleSheets(spreadsheet_id)
     google_sheets.send_to_google_sheets(formatter)
