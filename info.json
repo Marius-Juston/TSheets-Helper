@@ -1,5 +1,5 @@
 {
-  "spreadsheet_id": "1eSk-VW24hnpfvbqGCInvkSLFMC5ml7UcrKq1DmObAmY",
+  "spreadsheet_id": "1ImtDrstD8OzobtIknXnsyYDxBsbggJhZRrS9oIiYJpI",
   "hours_check": {
     "pre-GRITS": {
       "date": "2018-10-12",
@@ -17,19 +17,24 @@
       "participation": 80
     },
     "States": {
-      "date": "2019-2-10",
+      "date": "2019-02-10",
       "outreach": 35,
       "participation": 80
     },
     "Final Check": {
-      "date": "2019-2-28",
+      "date": "2019-02-28",
       "outreach": 35,
       "participation": 80
     },
     "Championships": {
-      "date": "2019-3-10",
+      "date": "2019-03-10",
       "outreach": 35,
       "participation": 80
+    },
+    "Lettering": {
+      "date": "2019-04-20",
+      "outreach": 60,
+      "participation": 150
     }
   },
   "excluded_hours": {
