@@ -11,9 +11,9 @@ if __name__ == '__main__':
     info = formatter.run()
 
     # spreadsheet_id = '1eSk-VW24hnpfvbqGCInvkSLFMC5ml7UcrKq1DmObAmY'
-    spreadsheet_id = '1ImtDrstD8OzobtIknXnsyYDxBsbggJhZRrS9oIiYJpI'
+    # spreadsheet_id = '1ImtDrstD8OzobtIknXnsyYDxBsbggJhZRrS9oIiYJpI'
 
-    google_sheets = GoogleSheets(spreadsheet_id)
+    google_sheets = GoogleSheets(formatter.info['spreadsheet_id'])
     google_sheets.send_to_google_sheets(formatter)
     google_sheets.open_spreadsheet()
 
