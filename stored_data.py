@@ -13,6 +13,7 @@ class TSheetsCache:
         users_table: 100,
         jobcodes_table: 100,
         timesheets_table: 12.0 / 24,
+        # timesheets_table: 0 ,
     }
 
     def __init__(self, database_file="tsheets_info.db", update_rates: dict = None, excluded_date_ranges=None) -> None:
