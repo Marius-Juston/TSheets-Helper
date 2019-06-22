@@ -14,7 +14,7 @@ def get_input_args():
         parents=[tools.argparser]
     )
     parser.add_argument('-t', "--token", required=True, type=str, help="The TSheets token to be able to use the API")
-    parser.add_argument('-n', "--notification", type=int,
+    parser.add_argument('-n', "--notification", type=int, default=0,
                         help="If you want to send notifications or not (0 for false, 1 for true)")
     parser.add_argument("-s", '--spreadsheet_id', type=str, help="The google sheets id to paste the information to")
 
