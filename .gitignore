@@ -3,3 +3,6 @@
 assets/client_id.json
 assets/info.json
 assets/storage.json
+build/
+dist/
+debug.log
