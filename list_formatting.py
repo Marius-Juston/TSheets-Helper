@@ -8,7 +8,7 @@ from tsheets_retriever import TSheetsAPI
 
 
 class Runner:
-    dynamic_date_formula = '=ARRAYFORMULA(IFERROR(MIN(FILTER({0}, {0}-NOW()>0)), FILTER({0},{0}-NOW()=MAX({0}-NOW()))))'
+    dynamic_date_formula = "=IFERROR(ARRAYFORMULA(MIN(FILTER({0}, {0}-NOW()>=0))), MAX({0}))"
     hours_finding_formula = '=INDEX({4}:{5},MATCH("{0}",{6}:{6}),MATCH({3},TRANSPOSE({1}:{2}),0))'
     outreach_equation = '=MIN({},{})'
     participation_equation = '={1}+IF({2}>{0},{2}-{0},0)'
