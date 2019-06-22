@@ -18,8 +18,9 @@ class GoogleSheets:
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/drive']
 
-    def __init__(self, spreadsheet_id, client_id='assets/client_id.json', storage='assets/storage.json') -> None:
+    def __init__(self, spreadsheet_id, client_id='assets/client_id.json', storage='assets/storage.json', flags=None) -> None:
         super().__init__()
+        self.flags = flags
         self.spreadsheet_id = spreadsheet_id
         self.storage = storage
         self.client_id = client_id
@@ -39,7 +40,7 @@ class GoogleSheets:
         creds = store.get()
         if not creds or creds.invalid:
             flow = client.flow_from_clientsecrets(self.client_id, self.SCOPES)
-            creds = run_flow(flow, store)
+            creds = run_flow(flow, store, flags=self.flags)
 
         return creds
 

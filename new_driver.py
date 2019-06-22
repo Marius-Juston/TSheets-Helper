@@ -1,12 +1,18 @@
 import argparse
 
+from oauth2client import tools
+
 from google_sheets import GoogleSheets
 from list_formatting import Runner
 
 
 def get_input_args():
     # Creates Argument Parser object named parser
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        parents=[tools.argparser]
+    )
     parser.add_argument('-t', "--token", required=True, type=str, help="The TSheets token to be able to use the API")
     parser.add_argument('-n', "--notification", type=int,
                         help="If you want to send notifications or not (0 for false, 1 for true)")
@@ -29,7 +35,7 @@ if __name__ == '__main__':
     if args.spreadsheet_id is not None:
         spreadsheet_id = args.spreadsheet_id
 
-    google_sheets = GoogleSheets(spreadsheet_id)
+    google_sheets = GoogleSheets(spreadsheet_id, flags=args)
     google_sheets.send_to_google_sheets(formatter)
     google_sheets.open_spreadsheet()
 
