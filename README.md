@@ -15,6 +15,8 @@
     3. If you want to send the info to another spreadsheet
 2. Example:
     1. `.\new_driver.exe -t TOKEN -n 0 -s SHEET_ID`
+    2. `.\new_driver.exe -t TOKEN -n 0`
+    3. `.\new_driver.exe -t TOKEN`
     
 
 
