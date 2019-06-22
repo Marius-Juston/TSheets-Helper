@@ -1,0 +1,1 @@
+pyinstaller new_driver.py --add-data info.json;. --add-data assets/*.json;assets/
