@@ -18,7 +18,8 @@ class GoogleSheets:
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/drive']
 
-    def __init__(self, spreadsheet_id, client_id='assets/client_id.json', storage='assets/storage.json', flags=None) -> None:
+    def __init__(self, spreadsheet_id, client_id='assets/client_id.json', storage='assets/storage.json',
+                 flags=None) -> None:
         super().__init__()
         self.flags = flags
         self.spreadsheet_id = spreadsheet_id

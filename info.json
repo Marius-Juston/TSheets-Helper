@@ -2,50 +2,50 @@
   "spreadsheet_id": "1ImtDrstD8OzobtIknXnsyYDxBsbggJhZRrS9oIiYJpI",
   "hours_check": {
     "pre-GRITS": {
-      "date": "2018-10-12",
+      "date": "2019-10-12",
       "outreach": 10,
       "participation": 25
     },
     "pre-Build": {
-      "date": "2018-12-10",
+      "date": "2019-12-10",
       "outreach": 35,
       "participation": 50
     },
     "Districts": {
-      "date": "2018-12-20",
+      "date": "2019-12-20",
       "outreach": 35,
       "participation": 80
     },
     "States": {
-      "date": "2019-02-10",
+      "date": "2020-02-10",
       "outreach": 35,
       "participation": 80
     },
     "Final Check": {
-      "date": "2019-02-28",
+      "date": "2020-02-28",
       "outreach": 35,
       "participation": 80
     },
     "Championships": {
-      "date": "2019-03-10",
+      "date": "2020-03-10",
       "outreach": 35,
       "participation": 80
     },
     "Lettering": {
-      "date": "2019-04-20",
+      "date": "2020-04-20",
       "outreach": 60,
       "participation": 150
     }
   },
   "excluded_hours": {
     "Garden City": {
-      "start": "2018-07-15",
-      "end": "2018-07-20"
+      "start": "2019-07-15",
+      "end": "2019-07-20"
     },
     "Dobbins Air Force Camp": {
-      "start": "2018-07-08",
-      "end": "2018-07-12"
+      "start": "2019-07-08",
+      "end": "2019-07-12"
     }
   },
-  "start_date": "2018-06-01"
+  "start_date": "2019-06-01"
 }
