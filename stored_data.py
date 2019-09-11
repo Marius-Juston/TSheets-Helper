@@ -182,7 +182,7 @@ class TSheetsCache:
                     ON T.jobcode_id = j.jobcode_id
                 INNER JOIN jobcodes j2 
                     ON j.parent_id = j2.jobcode_id
-            WHERE j2.name == 'Participation' OR j2.name == 'Training'{}
+            WHERE j2.name == 'Participation' OR j2.name == 'Training'
             GROUP BY student_name;
             '''.format(self.excluded_date_ranges))
 
@@ -200,7 +200,7 @@ class TSheetsCache:
                         ON T.jobcode_id = j.jobcode_id
                     INNER JOIN jobcodes j2 
                         ON j.parent_id = j2.jobcode_id
-                WHERE j2.name == 'O&S'{}
+                WHERE j2.name == 'O&S'
                 GROUP BY student_name;
                 '''.format(self.excluded_date_ranges))
         return hours.fetchall()
@@ -209,7 +209,7 @@ class TSheetsCache:
         particiaption = pd.DataFrame(self.fetch_participation_hours(), columns=["Name", "Participation"])
         outreach = pd.DataFrame(self.fetch_outreach_hours(), columns=["Name", "Outreach"])
 
-        merged = pd.merge(outreach, particiaption, on="Name")
+        merged = pd.merge(outreach, particiaption, on="Name", how='outer').fillna(0)
         return merged
 
     def format_excluded_date_ranges(self, excluded_date_ranges):
