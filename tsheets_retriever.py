@@ -74,7 +74,7 @@ class TSheetsAPI:
         data = []
 
         for key, value in users.items():
-            name = " ".join([value["first_name"], value["last_name"]])
+            name = f"{value['first_name']} {value['last_name']}".title()
             email_address = value['email']
             data.append([key, name, email_address])
 
