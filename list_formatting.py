@@ -48,18 +48,26 @@ class Runner:
 
     def collect_hours(self):
         # TODO make it so that it updates instead of having to retrieve all the data
-        with TSheetsCache(excluded_date_ranges=self.info['excluded_hours']) as database:
+        update_rates = None
+
+        if 'update_rates' in self.info:
+            update_rates = self.info['update_rates']
+
+        with TSheetsCache(excluded_date_ranges=self.info['excluded_hours'], update_rates=update_rates) as database:
             if database.needs_update(database.users_table):
+                print("Updating User")
                 people = self.tsheets_api.user_to_list()
                 success = database.insert_users(people)
                 database.add_time_stamp(database.users_table, success)
 
             if database.needs_update(database.jobcodes_table):
+                print("Updating Jobcodes")
                 jobcodes = self.tsheets_api.jobcodes_to_list()
                 success = database.insert_jobcodes(jobcodes)
                 database.add_time_stamp(database.jobcodes_table, success)
 
             if database.needs_update(database.timesheets_table):
+                print("Updating Timesheets")
                 timesheets = self.tsheets_api.timesheets_to_list()
                 success = database.insert_timesheets(timesheets)
                 database.add_time_stamp(database.timesheets_table, success)

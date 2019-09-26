@@ -47,5 +47,10 @@
       "end": "2019-07-12"
     }
   },
-  "start_date": "2019-06-01"
+  "start_date": "2019-06-01",
+  "update_rates": {
+    "users": 100,
+    "jobcodes": 100,
+    "timesheets": 0.5
+  }
 }
