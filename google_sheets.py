@@ -68,7 +68,7 @@ class GoogleSheets:
 
         # TODO use the formulas above to make it even more dynamic for dates
         self.clean_up_sheet()
-        print(formatter.check_date_row, formatter.check_date_column)
+        # print(formatter.check_date_row, formatter.check_date_column)
 
         self.format_sheet(formatter.outreach_cell, formatter.participation_cell, formatter.check_column_index,
                           formatter.outreach_column, formatter.participation_column,
@@ -107,8 +107,8 @@ class GoogleSheets:
         outreach_column_name_c = chr(ord('A') + outreach_column_c)
         participation_column_name_c = chr(ord('A') + participation_column_c)
 
-        print(outreach_cell, participation_cell, outreach_column_name_c, check_column, outreach_column,
-              participation_column)
+        # print(outreach_cell, participation_cell, outreach_column_name_c, check_column, outreach_column,
+        #       participation_column)
 
         reqs = {'requests': [
             self.__add_freeze_row(),

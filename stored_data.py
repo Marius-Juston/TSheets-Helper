@@ -20,7 +20,7 @@ class TSheetsCache:
         super().__init__()
         self.excluded_date_ranges = self.format_excluded_date_ranges(excluded_date_ranges)
 
-        print(self.excluded_date_ranges)
+        # print(self.excluded_date_ranges)
         self.conn = sqlite3.connect(database_file)
         self.cursor = self.conn.cursor()
 

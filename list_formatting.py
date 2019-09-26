@@ -42,7 +42,7 @@ class Runner:
         self.sort_hours(["Outreach", "Participation"])
         # print(self.hours)
         self.add_extra_info()
-        print(self.hours)
+        # print(self.hours)
         self.values = self.to_list()
         return self.values
 
